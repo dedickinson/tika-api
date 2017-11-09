@@ -1,0 +1,51 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.8.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+group = 'name.dickinson.duncan'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	azureVersion = '0.2.0'
+    tikaVersion = '1.16'
+    tikaDependencies = [
+            "tika-parsers",
+            "tika-translate",
+            "tika-langdetect",
+            "tika-serialization",
+            "tika-xmp"
+    ]
+}
+
+dependencies {
+    compile('com.microsoft.azure:azure-active-directory-spring-boot-starter')
+    compile('org.springframework.boot:spring-boot-starter-jersey')
+    for (dep in tikaDependencies) {
+        compile("org.apache.tika:$dep:$tikaVersion")
+    }
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.springframework.restdocs:spring-restdocs-mockmvc')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "com.microsoft.azure:azure-spring-boot-bom:${azureVersion}"
+	}
+}
