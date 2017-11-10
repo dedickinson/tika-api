@@ -1,25 +1,39 @@
 buildscript {
 	ext {
+		kotlinVersion = '1.1.51'
 		springBootVersion = '1.5.8.RELEASE'
 	}
 	repositories {
-		mavenCentral()
+        jcenter()
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
 	}
 }
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
+plugins {
+    id "org.asciidoctor.convert" version "1.5.3"
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
 apply plugin: 'org.springframework.boot'
 
 group = 'name.dickinson.duncan'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
+compileKotlin {
+	kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+	kotlinOptions.jvmTarget = "1.8"
+}
+
 repositories {
-	mavenCentral()
+    jcenter()
 }
 
 ext {
@@ -32,20 +46,41 @@ ext {
             "tika-serialization",
             "tika-xmp"
     ]
+    snippetsDir = file('build/generated-snippets')
 }
 
 dependencies {
-    compile('com.microsoft.azure:azure-active-directory-spring-boot-starter')
-    compile('org.springframework.boot:spring-boot-starter-jersey')
+    // compile('com.microsoft.azure:azure-active-directory-spring-boot-starter')
+	compile('org.springframework.boot:spring-boot-starter-web')
+    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
+	compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:${kotlinVersion}")
+	compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     for (dep in tikaDependencies) {
-        compile("org.apache.tika:$dep:$tikaVersion")
+        compile("org.apache.tika:${dep}:${tikaVersion}")
     }
+    asciidoctor 'org.springframework.restdocs:spring-restdocs-asciidoctor:1.2.2.RELEASE'
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('org.springframework.restdocs:spring-restdocs-mockmvc')
 }
 
+jar {
+    baseName = 'tika-api'
+    version = '0.1.0'
+
+
+    dependsOn asciidoctor
+    from ("${asciidoctor.outputDir}/html5") {
+        into 'static/docs'
+    }
+}
+
 dependencyManagement {
 	imports {
-		mavenBom "com.microsoft.azure:azure-spring-boot-bom:${azureVersion}"
+		// mavenBom "com.microsoft.azure:azure-spring-boot-bom:${azureVersion}"
 	}
+}
+
+asciidoctor {
+    inputs.dir snippetsDir
+    dependsOn test
 }
