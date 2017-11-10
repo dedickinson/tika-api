@@ -16,5 +16,8 @@
 
 package name.dickinson.duncan.tikaapi
 
+import org.springframework.hateoas.ResourceSupport
 
-data class TikaDetails (val version: String)
+data class HomeDetails(val name: String = "Tika API") : ResourceSupport()
+
+data class TikaDetails(val version: String) : ResourceSupport()

@@ -16,6 +16,13 @@
 
 package name.dickinson.duncan.tikaapi
 
+import org.springframework.hateoas.Link
+import org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo
+import org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn
+
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -26,9 +33,21 @@ const val PATH_VERSION = "/version"
 class Controller {
 
     @GetMapping(PATH_HOME)
-    fun home() = hashMapOf("name" to "Tika API")
+    fun home(): HttpEntity<HomeDetails> {
+        val details = HomeDetails()
+        val selfLink = linkTo(methodOn(Controller::class.java).home()).withSelfRel()
+        details.add(selfLink)
+        return ResponseEntity(details, HttpStatus.OK)
+    }
 
     @GetMapping(PATH_VERSION)
-    fun version() = TikaDetails(version = "1.16")
-
+    fun version(): HttpEntity<TikaDetails> {
+        val tikaDetails = TikaDetails(version = "1.16")
+        val selfLink = linkTo(methodOn(Controller::class.java).version()).withSelfRel()
+        with(tikaDetails) {
+            add(selfLink)
+            add(linkTo(methodOn(Controller::class.java).home()).withRel("top"))
+        }
+        return ResponseEntity(tikaDetails, HttpStatus.OK)
+    }
 }
